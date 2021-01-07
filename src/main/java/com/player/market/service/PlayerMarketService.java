@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.player.market.dto.ContractFee;
+import com.player.market.exception.InvildInputException;
+import com.player.market.exception.RecordNotFoundException;
 import com.player.market.model.Player;
 import com.player.market.model.PlayerTeamMapper;
 import com.player.market.model.Team;
@@ -40,16 +42,33 @@ public class PlayerMarketService {
 	}
 
 	public Player createUpdatePlayer(Player p) {
+
+		if (p.getDob().isAfter(p.getStartDate()))
+			throw new InvildInputException("Player DOB is invalid");
+
+		if (p.getDob().getYear() == (p.getStartDate().getYear()))
+			throw new InvildInputException("Player Start date is Invalid");
+
 		return playerRepository.save(p);
 	}
 
 	public String deletePlayer(Long id) {
-		playerRepository.deleteById(id);
+		try {
+			Player p = playerRepository.getOne(id);
+			if (p==null)
+				throw new RecordNotFoundException(id + "Player Not Found" );
+			playerRepository.deleteById(id);
+		} catch (Exception e) {
+			throw new RecordNotFoundException(id + "Player Not Found" );
+		}
 		return "Player Deleted Successfully ";
 	}
 
 	public List<Team> getAllTeam() {
-		return teamRepository.findAll();
+		List<Team> list =teamRepository.findAll();
+		if (list.size()==0)
+			throw new RecordNotFoundException("No Teams Yet");
+		return list;
 	}
 
 	public Team createUpdateTeam(Team t) {
@@ -57,7 +76,18 @@ public class PlayerMarketService {
 	}
 
 	public String deleteTeam(Long id) {
+
+		try {
+			Team t = teamRepository.getOne(id);
+			if (t == null)
+				throw new RecordNotFoundException(id + "Team Not Found");
+			playerRepository.deleteById(id);
+		} catch (Exception e) {
+			throw new RecordNotFoundException(id + "Team Not Found");
+		}
+
 		teamRepository.deleteById(id);
+
 		return "Team Deleted Successfully ";
 	}
 
@@ -82,6 +112,7 @@ public class PlayerMarketService {
 		return teamRepository.findByPlayerId(playerId);
 	}
 	
+	//contract fee calculation 
 	public ContractFee playerContractFee(Long playerId) {
 		Player player = playerRepository.findById(playerId).get();
 		double transferFee = player.getTransferFee();

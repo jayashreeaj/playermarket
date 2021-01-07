@@ -1,6 +1,6 @@
 package com.player.market.controller;
 
-import java.util.List;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +31,7 @@ public class PlayerMarketController {
 	}
 
 	@PostMapping(path = "/playerteam")
-	public ResponseEntity<?> mapPlayerTeam(@RequestBody PlayerTeamMapper tp) {
+	public ResponseEntity<?> mapPlayerTeam(@Valid @RequestBody PlayerTeamMapper tp) {
 		try {
 			return ResponseEntity.ok(playerMarketService.createUpdatePlayerTeam(tp));
 		} catch (Exception e) {
